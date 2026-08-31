@@ -3,6 +3,8 @@ novari:
     topic:
       domain-context: flyt
     application-id: ${fint.application-id}
+    tracing:
+      enabled: true
 
 spring:
   kafka:

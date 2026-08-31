@@ -1,5 +1,6 @@
 package no.novari.flyt.isygraving.gateway.instance
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import no.novari.flyt.gateway.instance.InstanceProcessor
 import no.novari.flyt.isygraving.gateway.dispatch.DispatchContextService
@@ -7,7 +8,6 @@ import no.novari.flyt.isygraving.gateway.instance.model.CaseInstance
 import no.novari.flyt.isygraving.gateway.instance.model.CaseStatus
 import no.novari.flyt.isygraving.gateway.instance.model.JournalPostInstance
 import no.novari.flyt.webresourceserver.UrlPaths.EXTERNAL_API
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
@@ -56,25 +56,30 @@ class IsyGravingInstanceController(
     ): ResponseEntity<Void> =
         journalPostInstanceProcessor
             .also {
-                log.info(
-                    "Received journalpost: caseId={}, archiveCaseId={}, documents={}",
-                    journalPostInstance.caseId,
-                    journalPostInstance.archiveCaseId,
-                    journalPostInstance.journalEntries
-                        .firstOrNull()
-                        ?.documents
-                        ?.size ?: 0,
-                )
+                log.atInfo {
+                    message = "Received journalpost"
+                    payload =
+                        mapOf(
+                            "caseId" to journalPostInstance.caseId,
+                            "archiveCaseId" to journalPostInstance.archiveCaseId,
+                            "documents" to (
+                                journalPostInstance.journalEntries
+                                    .firstOrNull()
+                                    ?.documents
+                                    ?.size ?: 0
+                            ),
+                        )
+                }
             }.processInstance(authentication, journalPostInstance)
             .also {
-                log.info(
-                    "Journalpost processed: caseId={}",
-                    journalPostInstance.caseId,
-                )
+                log.atInfo {
+                    message = "Journalpost processed"
+                    payload = mapOf("caseId" to journalPostInstance.caseId)
+                }
                 dispatchContextService.save(journalPostInstance)
             }
 
     companion object {
-        private val log = LoggerFactory.getLogger(IsyGravingInstanceController::class.java)
+        private val log = KotlinLogging.logger {}
     }
 }

@@ -38,6 +38,11 @@ patches:
       - op: add
         path: "/spec/env/-"
         value:
+          name: "novari.telemetry.org-id"
+          value: "telemarkfylke.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
           name: server.servlet.context-path
           value: "/telemarkfylke-no"
     target:

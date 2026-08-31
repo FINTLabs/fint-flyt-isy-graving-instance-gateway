@@ -38,6 +38,11 @@ patches:
       - op: add
         path: "/spec/env/-"
         value:
+          name: "novari.telemetry.org-id"
+          value: "afk.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
           name: server.servlet.context-path
           value: "/afk-no"
     target:

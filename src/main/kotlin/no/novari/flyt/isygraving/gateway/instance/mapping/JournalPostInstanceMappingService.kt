@@ -1,12 +1,12 @@
 package no.novari.flyt.isygraving.gateway.instance.mapping
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.novari.flyt.gateway.instance.InstanceMapper
 import no.novari.flyt.gateway.instance.model.File
 import no.novari.flyt.gateway.instance.model.instance.InstanceObject
 import no.novari.flyt.isygraving.gateway.instance.model.Document
 import no.novari.flyt.isygraving.gateway.instance.model.JournalPostInstance
 import no.novari.flyt.isygraving.gateway.instance.model.Recipient
-import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -80,12 +80,15 @@ class JournalPostInstanceMappingService : InstanceMapper<JournalPostInstance> {
                     document = mainDocument,
                 ),
             )
-        log.info(
-            "Uploaded main document: sourceApplicationInstanceId={}, fileName={}, fileId={}",
-            sourceApplicationInstanceId,
-            mainDocument.fileName,
-            mainDocumentFileId,
-        )
+        log.atInfo {
+            message = "Uploaded main document"
+            payload =
+                mapOf(
+                    "sourceApplicationInstanceId" to sourceApplicationInstanceId,
+                    "fileName" to mainDocument.fileName,
+                    "fileId" to mainDocumentFileId,
+                )
+        }
         return InstanceObject(
             valuePerKey =
                 mapOf(
@@ -139,12 +142,15 @@ class JournalPostInstanceMappingService : InstanceMapper<JournalPostInstance> {
                     document = document,
                 ),
             )
-        log.info(
-            "Uploaded attachment: sourceApplicationInstanceId={}, fileName={}, fileId={}",
-            sourceApplicationInstanceId,
-            document.fileName,
-            fileId,
-        )
+        log.atInfo {
+            message = "Uploaded attachment"
+            payload =
+                mapOf(
+                    "sourceApplicationInstanceId" to sourceApplicationInstanceId,
+                    "fileName" to document.fileName,
+                    "fileId" to fileId,
+                )
+        }
         return InstanceObject(
             valuePerKey =
                 mapOf(
@@ -160,7 +166,7 @@ class JournalPostInstanceMappingService : InstanceMapper<JournalPostInstance> {
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(JournalPostInstanceMappingService::class.java)
+        private val log = KotlinLogging.logger {}
     }
 
     private fun toFile(

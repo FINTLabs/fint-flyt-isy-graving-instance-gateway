@@ -38,8 +38,18 @@ patches:
       - op: add
         path: "/spec/env/-"
         value:
+          name: "novari.telemetry.org-id"
+          value: "vestfoldfylke.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
           name: server.servlet.context-path
           value: "/beta/vestfoldfylke-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "OTEL_EXPORTER_OTLP_ENDPOINT"
+          value: "http://alloy.flais-system.svc.cluster.local:4318"
     target:
       kind: Application
       name: fint-flyt-isy-graving-gateway

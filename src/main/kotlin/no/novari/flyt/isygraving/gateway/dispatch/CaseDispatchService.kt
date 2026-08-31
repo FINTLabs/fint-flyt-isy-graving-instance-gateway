@@ -1,6 +1,7 @@
 package no.novari.flyt.isygraving.gateway.dispatch
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.novari.flyt.gateway.instance.kafka.ArchiveCaseIdRequestService
 import no.novari.flyt.isygraving.gateway.dispatch.DispatchContextService.Companion.INTEGRATION_CASE
 import no.novari.flyt.isygraving.gateway.dispatch.DispatchContextService.Companion.INTEGRATION_JOURNALPOST
@@ -9,7 +10,6 @@ import no.novari.flyt.isygraving.gateway.dispatch.model.DispatchReceiptEntity
 import no.novari.flyt.isygraving.gateway.dispatch.repository.DispatchContextRepository
 import no.novari.flyt.isygraving.gateway.dispatch.repository.DispatchReceiptRepository
 import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders
-import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.MediaType
 import org.springframework.scheduling.annotation.Scheduled
@@ -37,10 +37,10 @@ class CaseDispatchService(
         if (sourceApplicationIntegrationId != INTEGRATION_CASE &&
             sourceApplicationIntegrationId != INTEGRATION_JOURNALPOST
         ) {
-            log.debug(
-                "Skipping instance-dispatched for sourceApplicationIntegrationId={}",
-                sourceApplicationIntegrationId,
-            )
+            log.atDebug {
+                message = "Skipping instance-dispatched"
+                payload = mapOf("sourceApplicationIntegrationId" to sourceApplicationIntegrationId)
+            }
             return
         }
 
@@ -108,12 +108,19 @@ class CaseDispatchService(
             return
         }
 
-        log.info("Retrying {} dispatch receipts", pendingDispatches.size)
+        log.atInfo {
+            message = "Retrying dispatch receipts"
+            payload = mapOf("pendingDispatches" to pendingDispatches.size)
+        }
         pendingDispatches.forEach { receipt ->
             try {
                 dispatchReceipt(receipt)
             } catch (ex: Exception) {
-                log.warn("Retry failed for dispatchReceiptId={}", receipt.id, ex)
+                log.atWarn {
+                    message = "Retry failed"
+                    payload = mapOf("dispatchReceiptId" to receipt.id)
+                    cause = ex
+                }
             }
         }
     }
@@ -157,11 +164,14 @@ class CaseDispatchService(
     }
 
     private fun dispatchReceipt(receipt: DispatchReceiptEntity) {
-        log.debug(
-            "Dispatching sourceApplicationInstanceId={} via PUT to callback={}",
-            receipt.sourceApplicationInstanceId,
-            receipt.callbackUrl,
-        )
+        log.atDebug {
+            message = "Dispatching receipt via PUT"
+            payload =
+                mapOf(
+                    "sourceApplicationInstanceId" to receipt.sourceApplicationInstanceId,
+                    "callbackUrl" to receipt.callbackUrl,
+                )
+        }
 
         val payloadNode = objectMapper.readTree(receipt.payload)
 
@@ -177,12 +187,15 @@ class CaseDispatchService(
             dispatchReceiptRepository.delete(receipt)
         } catch (ex: Exception) {
             if (isPermanentFailure(ex)) {
-                log.warn(
-                    "Permanent dispatch failure, deleting receipt id={} callbackUrl={}",
-                    receipt.id,
-                    receipt.callbackUrl,
-                    ex,
-                )
+                log.atWarn {
+                    message = "Permanent dispatch failure, deleting receipt"
+                    payload =
+                        mapOf(
+                            "dispatchReceiptId" to receipt.id,
+                            "callbackUrl" to receipt.callbackUrl,
+                        )
+                    cause = ex
+                }
                 dispatchReceiptRepository.delete(receipt)
                 return
             }
@@ -207,6 +220,6 @@ class CaseDispatchService(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(CaseDispatchService::class.java)
+        private val log = KotlinLogging.logger {}
     }
 }
