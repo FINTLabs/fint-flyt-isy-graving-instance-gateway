@@ -46,6 +46,7 @@ extra["httpcore5.version"] = "5.4.3"
 extra["jackson-bom.version"] = "2.22.2"
 extra["log4j2.version"] = "2.26.1"
 extra["postgresql.version"] = "42.7.12"
+extra["tomcat.version"] = "10.1.59"
 
 dependencies {
     constraints {
